@@ -1,20 +1,10 @@
 {
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "rewrites": [
-    { "source": "/", "destination": "https://246da0a7-5491-4b01-8531-aa776a2cec66.cfargotunnel.com/api/tags" },
-    { "source": "/api/(.*)", "destination": "https://246da0a7-5491-4b01-8531-aa776a2cec66.cfargotunnel.com/api/$1" },
-    { "source": "/(.*)", "destination": "https://246da0a7-5491-4b01-8531-aa776a2cec66.cfargotunnel.com/$1" }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "https://api.alviglobal.com" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,PATCH,DELETE,OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, Ollama-*" },
-        { "key": "Access-Control-Max-Age", "value": "86400" }
-      ]
-    }
+  "env": {
+    "UPSTREAM": "https://246da0a7-5491-4b01-8531-aa776a2cec66.cfargotunnel.com"
+  },
+  "routes": [
+    { "src": "^/tags$", "dest": "/api/proxy" },
+    { "src": "^/generate$", "dest": "/api/proxy" },
+    { "src": "^/(.*)$", "dest": "/api/proxy" }
   ]
 }
