@@ -1,5 +1,7 @@
 {
-  "routes": [
-    { "src": "/(.*)", "dest": "/api/proxy.ts" }
+  "rewrites": [
+    { "source": "/api/proxy", "destination": "/api/proxy" },
+    { "source": "/(tags|generate)", "destination": "/api/proxy" },
+    { "source": "/:path((?!api/proxy).*)", "destination": "/api/proxy" }
   ]
 }
