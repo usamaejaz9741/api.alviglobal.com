@@ -3,8 +3,8 @@
     "UPSTREAM": "https://246da0a7-5491-4b01-8531-aa776a2cec66.cfargotunnel.com"
   },
   "routes": [
-    { "src": "^/tags$", "dest": "/api/proxy" },
-    { "src": "^/generate$", "dest": "/api/proxy" },
-    { "src": "^/(.*)$", "dest": "/api/proxy" }
+    { "src": "^/tags$", "dest": "/api/proxy.ts" },
+    { "src": "^/generate$", "dest": "/api/proxy.ts" },
+    { "src": "^/(.*)$", "dest": "/api/proxy.ts" }
   ]
 }
