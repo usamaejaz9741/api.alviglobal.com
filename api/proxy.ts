@@ -1,11 +1,17 @@
 export const config = { runtime: 'edge' };
 
-const allowOrigins = [
-  'https://api.alviglobal.com',
-];
+/** Minimal shim so TS compiles in Edge runtime without @types/node */
+declare const process:
+  | undefined
+  | { env?: Record<string, string | undefined> };
+
+const allowOrigins = ['https://api.alviglobal.com'];
+
+/** If UPSTREAM env is missing, fall back to your tunnel */
+const UPSTREAM_FALLBACK = 'https://246da0a7-5491-4b01-8531-aa776a2cec66.cfargotunnel.com';
 
 function corsHeaders(origin: string | null) {
-  const allow = origin && allowOrigins.includes(origin) ? origin : 'https://api.alviglobal.com';
+  const allow = origin && allowOrigins.includes(origin) ? origin : allowOrigins[0];
   return {
     'Access-Control-Allow-Origin': allow,
     'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
@@ -15,12 +21,15 @@ function corsHeaders(origin: string | null) {
 }
 
 export default async function handler(req: Request) {
-  const upstreamBase = (process.env.UPSTREAM || '').replace(/\/+$/, '');
+  // Read UPSTREAM from env if present, else fallback
+  const upstreamBase = (process?.env?.UPSTREAM ?? UPSTREAM_FALLBACK).replace(/\/+$/, '');
   if (!upstreamBase) return new Response('Missing UPSTREAM', { status: 500 });
 
   const inUrl = new URL(req.url);
   const origin = req.headers.get('origin');
 
+  // Map pretty paths to Ollama’s /api/*
+  // "/" -> /api/tags, "/tags" -> /api/tags, "/generate" -> /api/generate, etc.
   let upstreamPath = inUrl.pathname;
   if (!upstreamPath.startsWith('/api/')) {
     upstreamPath = upstreamPath === '/' ? '/api/tags' : '/api' + upstreamPath;
@@ -30,12 +39,13 @@ export default async function handler(req: Request) {
   outUrl.pathname = upstreamPath;
   outUrl.search = inUrl.search;
 
+  // Preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders(origin) });
   }
 
   const fwdHeaders = new Headers(req.headers);
-  fwdHeaders.delete('host');
+  fwdHeaders.delete('host'); // Edge can’t set Host
 
   const resp = await fetch(outUrl.toString(), {
     method: req.method,
